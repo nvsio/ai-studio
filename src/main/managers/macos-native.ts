@@ -264,17 +264,10 @@ export class MacOSNativeManager {
 
   // ===== TRAY (Menu Bar Icon) =====
   private setupTray(): void {
-    // Create a 16x16 template image for the tray
-    // In production, use a proper icon file
-    const iconPath = path.join(__dirname, '../../resources/trayIconTemplate.png')
-
-    try {
-      const trayIcon = nativeImage.createFromPath(iconPath)
-      this.tray = new Tray(trayIcon.resize({ width: 16, height: 16 }))
-    } catch {
-      // Fallback: create a simple icon
-      this.tray = new Tray(nativeImage.createEmpty())
-    }
+    // Create a template image for macOS menu bar
+    // Template images automatically adapt to light/dark mode
+    const trayIcon = this.createTrayIcon()
+    this.tray = new Tray(trayIcon)
 
     this.tray.setToolTip('AI Studio')
 
@@ -483,6 +476,33 @@ export class MacOSNativeManager {
   }
 
   // ===== HELPER METHODS =====
+  private createTrayIcon(): Electron.NativeImage {
+    // Create a simple AI icon for the tray (16x16 template image)
+    // Template images are grayscale and macOS automatically inverts them for dark mode
+    const iconSize = 16
+    const scale = 2 // For retina displays
+
+    // Create a simple "AI" shaped icon using data URL
+    // This creates a minimal circuit-brain style icon
+    const svg = `
+      <svg width="${iconSize * scale}" height="${iconSize * scale}" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="14" stroke="black" stroke-width="2" fill="none"/>
+        <circle cx="16" cy="12" r="4" fill="black"/>
+        <path d="M10 22 L16 18 L22 22" stroke="black" stroke-width="2" fill="none"/>
+        <circle cx="10" cy="22" r="2" fill="black"/>
+        <circle cx="22" cy="22" r="2" fill="black"/>
+      </svg>
+    `
+
+    const dataUrl = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
+    const icon = nativeImage.createFromDataURL(dataUrl)
+
+    // Mark as template so macOS handles light/dark mode automatically
+    icon.setTemplateImage(true)
+
+    return icon.resize({ width: iconSize, height: iconSize })
+  }
+
   private newChatFromClipboard(): void {
     const text = clipboard.readText()
     if (text) {

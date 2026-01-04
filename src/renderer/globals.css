@@ -4,6 +4,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Native macOS System Font Stack */
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
+    'Helvetica Neue', 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', ui-monospace, 'Menlo', 'Monaco', 'Cascadia Code',
+    'Consolas', monospace;
+}
+
 @layer utilities {
   .scrollbar::-webkit-scrollbar {
     @apply hidden w-1.5 h-2.5 group-hover:block transition-colors;
@@ -15,6 +23,61 @@
 
   .scrollbar::-webkit-scrollbar-thumb {
     @apply bg-border rounded-full;
+  }
+
+  /* Native macOS scrollbar styling */
+  .native-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .native-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .native-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .native-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+    background-clip: content-box;
+  }
+
+  .dark .native-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    background-clip: content-box;
+  }
+
+  .dark .native-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+    background-clip: content-box;
+  }
+
+  /* Vibrancy overlay for sidebar */
+  .vibrancy-sidebar {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  .dark .vibrancy-sidebar {
+    background: rgba(30, 30, 30, 0.7);
+  }
+
+  /* Native button press effect */
+  .native-button:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+
+  /* macOS focus ring */
+  .native-focus:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
   }
 }
 
@@ -40,6 +103,12 @@
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
     --radius: 0.5rem;
+
+    /* macOS-specific colors */
+    --system-blue: 211 100% 50%;
+    --system-gray: 240 6% 90%;
+    --window-bg: 0 0% 98%;
+    --sidebar-bg: 220 14% 96%;
   }
 
   .dark {
@@ -62,15 +131,56 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+
+    /* macOS-specific dark colors */
+    --system-blue: 211 100% 60%;
+    --system-gray: 240 6% 25%;
+    --window-bg: 240 10% 8%;
+    --sidebar-bg: 240 10% 12%;
   }
 }
 
 @layer base {
+  * {
+    /* Disable blue highlight on touch */
+    -webkit-tap-highlight-color: transparent;
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent text selection on UI elements */
+    user-select: none;
+  }
+
+  /* Allow text selection in content areas */
+  .selectable,
+  textarea,
+  input,
+  [contenteditable="true"],
+  pre,
+  code,
+  .prose {
+    user-select: text;
+  }
+
+  /* Native macOS selection color */
+  ::selection {
+    background: hsl(var(--system-blue) / 0.3);
+  }
+
+  /* Code blocks with SF Mono */
+  pre, code {
+    font-family: var(--font-mono);
   }
 }
 
+/* Title bar drag region */
 #drag {
   -webkit-app-region: drag;
   -webkit-user-select: none;
@@ -79,6 +189,71 @@
 
 #no-drag {
   -webkit-app-region: no-drag;
+}
+
+/* Sidebar styling for native feel */
+.sidebar {
+  background: hsl(var(--sidebar-bg));
+}
+
+/* Make sidebar transparent with vibrancy on macOS */
+@supports (-webkit-backdrop-filter: blur(20px)) {
+  .sidebar-vibrancy {
+    background: rgba(255, 255, 255, 0.5);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  .dark .sidebar-vibrancy {
+    background: rgba(30, 30, 30, 0.5);
+  }
+}
+
+/* Traffic light padding for macOS */
+.traffic-light-padding {
+  padding-top: 52px; /* 36px titlebar + 16px spacing */
+}
+
+/* Native animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.2s ease-out;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /*
@@ -91,4 +266,46 @@ Workaround for the focus visible of the treeitem from react-arborist
 
 [role='treeitem'] + [role='treeitem'] {
   margin-top: 1px;
+}
+
+/* Native popover/dropdown styling */
+.native-popover {
+  background: hsl(var(--popover));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.dark .native-popover {
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Input field styling to match macOS */
+.native-input {
+  @apply rounded-md border border-input bg-background px-3 py-2;
+  @apply transition-shadow duration-150;
+}
+
+.native-input:focus {
+  @apply outline-none;
+  box-shadow: 0 0 0 3px hsl(var(--system-blue) / 0.3);
+  border-color: hsl(var(--system-blue));
+}
+
+/* Native list item hover */
+.native-list-item {
+  @apply rounded-md px-2 py-1.5 transition-colors duration-100;
+}
+
+.native-list-item:hover {
+  background: hsl(var(--accent));
+}
+
+.native-list-item.selected {
+  background: hsl(var(--system-blue));
+  color: white;
 }

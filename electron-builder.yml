@@ -1,4 +1,4 @@
-appId: com.dynaboard.ai-studio
+appId: com.aistudio.app
 productName: AI Studio
 directories:
   buildResources: build

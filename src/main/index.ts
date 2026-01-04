@@ -60,15 +60,27 @@ async function createWindow() {
   vectorStoreManager.initialize()
 
   win = new BrowserWindow({
-    title: 'Main window',
+    title: 'AI Studio',
     width: 1200,
     height: 800,
+    minWidth: 800,
+    minHeight: 600,
     webPreferences: {
       preload,
       nodeIntegration: false,
       contextIsolation: true,
     },
+    // Native macOS appearance
     titleBarStyle: 'hiddenInset',
+    trafficLightPosition: { x: 16, y: 18 },
+    vibrancy: 'sidebar',
+    visualEffectState: 'followWindow',
+    backgroundColor: '#00000000', // Transparent for vibrancy
+    transparent: platform() === 'darwin',
+    // Smooth corners on macOS
+    roundedCorners: true,
+    // Enable native window shadow
+    hasShadow: true,
   })
 
   embeddingsManager = new EmbeddingsManager(win, vectorStoreManager)
