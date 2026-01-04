@@ -1,12 +1,14 @@
 import { is } from '@electron-toolkit/utils'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
-import { release } from 'node:os'
+import { release, platform } from 'node:os'
 import { join } from 'node:path'
 
 import { ElectronChatManager } from '@/managers/chats'
 import { EmbeddingsManager } from '@/managers/embeddings'
 import { ElectronFilesManager } from '@/managers/files'
+import { hardwareManager } from '@/managers/hardware'
 import { ElectronLlamaServerManager } from '@/managers/llama-server'
+import { macOSNativeManager } from '@/managers/macos-native'
 import { ElectronModelManager } from '@/managers/models'
 import { ElectronToolManager } from '@/managers/tools'
 import { SystemUsageManager } from '@/managers/usage'
@@ -20,6 +22,15 @@ if (release().startsWith('6.1')) app.disableHardwareAcceleration()
 
 // Set application name for Windows 10+ notifications
 if (process.platform === 'win32') app.setAppUserModelId(app.getName())
+
+// Log hardware profile on startup (for debugging)
+const hwProfile = hardwareManager.getProfile()
+console.log('[AI Studio] Hardware Profile:', {
+  chip: `${hwProfile.generation} ${hwProfile.variant}`,
+  memory: `${hwProfile.totalMemoryGB}GB`,
+  gpuCores: hwProfile.gpuCores,
+  recommended: hwProfile.recommended,
+})
 
 if (!app.requestSingleInstanceLock()) {
   app.quit()
@@ -124,6 +135,11 @@ async function createWindow() {
   embeddingsManager.addClientEventHandlers()
   toolManager.addClientEventHandlers()
   filesManager.addClientEventHandlers()
+
+  // Initialize macOS native features (menu bar, shortcuts, etc.)
+  if (platform() === 'darwin') {
+    macOSNativeManager.initialize(win)
+  }
 }
 
 app.whenReady().then(createWindow)
@@ -156,6 +172,10 @@ app.on('activate', () => {
 
 app.on('will-quit', () => {
   llamaServerManager.close()
+  // Cleanup macOS native features
+  if (platform() === 'darwin') {
+    macOSNativeManager.cleanup()
+  }
 })
 
 ipcMain.on('open-path', (_, path) => {

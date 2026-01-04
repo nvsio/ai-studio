@@ -65,7 +65,7 @@ export class ElectronModelManager {
   }
 
   close() {
-    this.window.off('will-download', this.onWillDownload)
+    this.window.webContents.session.off('will-download', this.onWillDownload)
     this.downloads.forEach((download) => {
       download.cancel()
       download.removeAllListeners()
@@ -78,7 +78,35 @@ export class ElectronModelManager {
   }
 
   haveDefaultModel() {
-    return this.haveLocalModel('mistral-7b-instruct-v0.1.Q4_K_M.gguf')
+    // Check for any of the recommended default models
+    const defaultModels = [
+      'Llama-3.2-8B-Instruct-Q4_K_M.gguf',
+      'Qwen2.5-7B-Instruct-Q4_K_M.gguf',
+      'Llama-3.3-70B-Instruct-Q4_K_M.gguf',
+      'Qwen2.5-Coder-32B-Instruct-Q4_K_M.gguf',
+      // Legacy fallback
+      'mistral-7b-instruct-v0.1.Q4_K_M.gguf',
+    ]
+
+    return defaultModels.some((model) => this.haveLocalModel(model))
+  }
+
+  // Get the best available model based on hardware
+  getBestAvailableModel(): string | null {
+    const defaultModels = [
+      'Llama-3.3-70B-Instruct-Q4_K_M.gguf',
+      'Qwen2.5-Coder-32B-Instruct-Q4_K_M.gguf',
+      'Llama-3.2-8B-Instruct-Q4_K_M.gguf',
+      'Qwen2.5-7B-Instruct-Q4_K_M.gguf',
+      'mistral-7b-instruct-v0.1.Q4_K_M.gguf',
+    ]
+
+    for (const model of defaultModels) {
+      if (this.haveLocalModel(model)) {
+        return model
+      }
+    }
+    return null
   }
 
   addClientEventHandlers() {

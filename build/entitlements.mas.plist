@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <!-- App Sandbox (required for Mac App Store) -->
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+
+    <!-- Team identifier -->
+    <key>com.apple.application-identifier</key>
+    <string>$(TeamIdentifierPrefix)com.dynaboard.ai-studio</string>
+    <key>com.apple.developer.team-identifier</key>
+    <string>$(TeamIdentifierPrefix)</string>
+
+    <!-- Network access for model downloads -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+
+    <!-- File access -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+    <key>com.apple.security.files.downloads.read-write</key>
+    <true/>
+
+    <!-- App data container access -->
+    <key>com.apple.security.application-groups</key>
+    <array>
+      <string>$(TeamIdentifierPrefix)com.dynaboard.ai-studio</string>
+    </array>
+
+    <!-- Required for llama.cpp Metal acceleration in sandbox -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+
+    <!-- GPU compute access -->
+    <key>com.apple.security.device.gpu-compute</key>
+    <true/>
+  </dict>
+</plist>

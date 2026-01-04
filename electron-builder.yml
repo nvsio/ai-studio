@@ -1,5 +1,5 @@
 appId: com.dynaboard.ai-studio
-productName: Dynaboard AI Studio
+productName: AI Studio
 directories:
   buildResources: build
 files:
@@ -14,7 +14,12 @@ asarUnpack:
   - resources/**
   - node_modules/@xenova/transformers
 win:
-  executableName: electron-test
+  executableName: ai-studio
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - arm64
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
@@ -22,25 +27,65 @@ nsis:
   createDesktopShortcut: always
 afterSign: scripts/notarize.js
 mac:
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch:
+        - arm64
+        - x64
+    - target: mas
+      arch:
+        - arm64
+        - universal
   entitlementsInherit: build/entitlements.mac.plist
+  entitlements: build/entitlements.mac.plist
+  hardenedRuntime: true
+  gatekeeperAssess: false
   extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: false
+    NSCameraUsageDescription: AI Studio requests camera access for image analysis features.
+    NSMicrophoneUsageDescription: AI Studio requests microphone access for voice input features.
+    NSDocumentsFolderUsageDescription: AI Studio needs access to Documents to open and process files.
+    NSDownloadsFolderUsageDescription: AI Studio needs access to Downloads to open and process files.
+    NSAppleEventsUsageDescription: AI Studio needs permission to run automation scripts.
+    LSApplicationCategoryType: public.app-category.productivity
+    LSMinimumSystemVersion: "14.0"
+    NSHighResolutionCapable: true
+    NSSupportsAutomaticGraphicsSwitching: true
+  # macOS 14+ (Sonoma) minimum for best M4 support
+  minimumSystemVersion: "14.0"
+  notarize: true
+mas:
+  entitlements: build/entitlements.mas.plist
+  entitlementsInherit: build/entitlements.mas.inherit.plist
+  provisioningProfile: build/embedded.provisionprofile
+  hardenedRuntime: false
+  category: public.app-category.productivity
 dmg:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${name}-${version}-${arch}.${ext}
+  background: build/dmg-background.png
+  icon: build/icon.icns
+  iconSize: 128
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
 linux:
   target:
     - AppImage
     - snap
     - deb
-  maintainer: electronjs.org
+  maintainer: dynaboard.com
   category: Utility
+  desktop:
+    StartupWMClass: ai-studio
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  owner: dynaboard
+  repo: ai-studio
+  releaseType: release

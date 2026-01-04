@@ -15,10 +15,15 @@ import { sendToRenderer } from '@/webcontents'
 
 import {
   BasePromptWrapper,
+  CommandRPromptWrapper,
+  DeepSeekPromptWrapper,
+  Gemma2PromptWrapper,
+  Llama3PromptWrapper,
   LlamaPromptWrapper,
   MistralPromptWrapper,
   OpenFunctionsPromptWrapper,
   PhindPromptWrapper,
+  Qwen2PromptWrapper,
   SimplePromptWrapper,
   ZephyrPromptWrapper,
 } from '../../shared/prompt-wrappers'
@@ -563,6 +568,8 @@ Helpful Answer:
     switch (templateName) {
       case 'llama':
         return new LlamaPromptWrapper()
+      case 'llama3':
+        return new Llama3PromptWrapper()
       case 'mistral':
         return new MistralPromptWrapper()
       case 'zephyr':
@@ -571,6 +578,15 @@ Helpful Answer:
         return new PhindPromptWrapper()
       case 'openfunctions':
         return new OpenFunctionsPromptWrapper()
+      case 'qwen2':
+      case 'chatml':
+        return new Qwen2PromptWrapper()
+      case 'deepseek':
+        return new DeepSeekPromptWrapper()
+      case 'gemma2':
+        return new Gemma2PromptWrapper()
+      case 'command-r':
+        return new CommandRPromptWrapper()
       default:
         return new SimplePromptWrapper()
     }

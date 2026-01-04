@@ -1,11 +1,26 @@
 {
-  "name": "dynaboard-ai-studio",
+  "name": "ai-studio",
   "author": {
-    "name": "Dynaboard",
+    "name": "AI Studio Contributors",
     "email": "ai-studio@dynaboard.com"
   },
-  "description": "Dynaboard AI Studio",
-  "version": "1.0.0-beta.2",
+  "description": "Run powerful AI models locally on your Mac. Privacy-first, open-source, optimized for Apple Silicon.",
+  "version": "2.0.0",
+  "homepage": "https://github.com/dynaboard/ai-studio",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dynaboard/ai-studio.git"
+  },
+  "keywords": [
+    "ai",
+    "llm",
+    "local-ai",
+    "apple-silicon",
+    "privacy",
+    "llama",
+    "electron",
+    "macos"
+  ],
   "main": "./out/main/index.js",
   "private": true,
   "debug": {
@@ -47,7 +62,7 @@
     "@tailwindcss/typography": "^0.5.10",
     "@xenova/transformers": "^2.9.0",
     "autoprefixer": "^10.4.16",
-    "better-sqlite3": "^9.1.1",
+    "better-sqlite3": "^11.7.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "cmdk": "^0.2.0",
@@ -104,9 +119,9 @@
     "@vitejs/plugin-react": "^4.0.4",
     "autoprefixer": "^10.4.16",
     "dotenv": "^16.3.1",
-    "electron": "^27.0.0",
-    "electron-builder": "^24.9.1",
-    "electron-vite": "^1.0.29",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^2.3.0",
     "env-cmd": "^10.1.0",
     "eslint": "^8.31.0",
     "eslint-config-prettier": "^8.3.0",

@@ -2,8 +2,31 @@ import { ChildProcess, execFile } from 'child_process'
 import pidusage from 'pidusage'
 
 import llamaServer from '../../../resources/llamacpp/server?asset&asarUnpack'
+import { hardwareManager } from './hardware'
 
-const CONTEXT_SIZE = 4096
+// Dynamic context size based on available hardware
+function getOptimalContextSize(): number {
+  const profile = hardwareManager.getProfile()
+  return profile.recommended.contextSize
+}
+
+// Dynamic GPU layers based on hardware capabilities
+function getOptimalGpuLayers(): number {
+  const profile = hardwareManager.getProfile()
+  return profile.recommended.gpuLayers
+}
+
+// Dynamic CPU threads based on performance cores
+function getOptimalThreads(): number {
+  const profile = hardwareManager.getProfile()
+  return profile.recommended.cpuThreads
+}
+
+// Dynamic batch size for throughput optimization
+function getOptimalBatchSize(): number {
+  const profile = hardwareManager.getProfile()
+  return profile.recommended.batchSize
+}
 
 export type CompletionParams = {
   prompt?: string
@@ -28,6 +51,11 @@ type LaunchOptions = {
   multimodal?: boolean
   mmprojPath?: string
   port?: string
+  // Optional overrides for hardware-detected defaults
+  contextSize?: number
+  gpuLayers?: number
+  threads?: number
+  batchSize?: number
 }
 
 export class ElectronLlamaServerManager {
@@ -36,21 +64,58 @@ export class ElectronLlamaServerManager {
   loading = new Map<string, Promise<unknown>>()
 
   async launchServer(options: LaunchOptions) {
-    const { id, modelPath, mmprojPath, multimodal = false, port } = options
+    const {
+      id,
+      modelPath,
+      mmprojPath,
+      multimodal = false,
+      port,
+      contextSize,
+      gpuLayers,
+      threads,
+      batchSize,
+    } = options
 
     if (this.loading.has(id)) {
       return this.loading.get(id)
     }
 
+    // Use provided values or fall back to hardware-optimized defaults
+    const effectiveContextSize = contextSize ?? getOptimalContextSize()
+    const effectiveGpuLayers = gpuLayers ?? getOptimalGpuLayers()
+    const effectiveThreads = threads ?? getOptimalThreads()
+    const effectiveBatchSize = batchSize ?? getOptimalBatchSize()
+
+    // Log hardware profile for debugging
+    const hwProfile = hardwareManager.getProfile()
+    console.log('[LLAMACPP] Hardware Profile:', {
+      chip: `${hwProfile.generation} ${hwProfile.variant}`,
+      memory: `${hwProfile.totalMemoryGB}GB`,
+      gpuCores: hwProfile.gpuCores,
+    })
+    console.log('[LLAMACPP] Launch Config:', {
+      contextSize: effectiveContextSize,
+      gpuLayers: effectiveGpuLayers,
+      threads: effectiveThreads,
+      batchSize: effectiveBatchSize,
+    })
+
     const args = [
       '-m',
       modelPath,
       '-c',
-      CONTEXT_SIZE.toString(),
+      effectiveContextSize.toString(),
       '-ngl',
-      '4',
+      effectiveGpuLayers.toString(),
       '-t',
-      '4',
+      effectiveThreads.toString(),
+      '-b',
+      effectiveBatchSize.toString(),
+      // Enable Flash Attention for better memory efficiency (llama.cpp 2024+)
+      '--flash-attn',
+      // Enable Metal GPU acceleration optimizations
+      '--mlock', // Lock model in memory for consistent performance
+      '-np', '1', // Number of parallel sequences (optimize for single user)
     ]
     if (multimodal && mmprojPath) {
       args.push('--mmproj', mmprojPath)
