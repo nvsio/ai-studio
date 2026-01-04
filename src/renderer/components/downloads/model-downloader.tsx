@@ -1,7 +1,7 @@
 import { ModelFile } from '@shared/model-list'
 import { LucideDownload, LucideLoader2, LucideTrash } from 'lucide-react'
 import prettyBytes from 'pretty-bytes'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import {
   AlertDialog,
@@ -14,6 +14,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
 import {
   DEFAULT_MODEL,
   useAvailableModels,
@@ -82,9 +83,17 @@ function FileEntry({ file }: { file: ModelFile }) {
     model.files.some((localFile) => localFile.name === file.name),
   )
 
-  const isDownloading = !!downloads.find(
-    (download) => download.filename === file.name,
+  const activeDownload = useMemo(
+    () => downloads.find((download) => download.filename === file.name),
+    [downloads, file.name],
   )
+
+  const isDownloading = !!activeDownload
+
+  const downloadProgress = useMemo(() => {
+    if (!activeDownload || activeDownload.totalBytes === 0) return 0
+    return (activeDownload.receivedBytes / activeDownload.totalBytes) * 100
+  }, [activeDownload])
 
   return (
     <a
@@ -191,6 +200,20 @@ function FileEntry({ file }: { file: ModelFile }) {
           )}
         </div>
       </div>
+      {/* Download progress bar */}
+      {isDownloading && (
+        <div className="mt-2 flex flex-col gap-1">
+          <Progress value={downloadProgress} className="h-1.5" />
+          <div className="flex justify-between">
+            <span className="text-[10px] font-medium text-muted-foreground">
+              {downloadProgress.toFixed(1)}%
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              {prettyBytes(activeDownload?.receivedBytes ?? 0)} / {prettyBytes(file.sizeBytes)}
+            </span>
+          </div>
+        </div>
+      )}
     </a>
   )
 }
