@@ -14,21 +14,37 @@ import { Image, SearchApi } from '../tools/search'
 const SERVER_ID = 'TOOL_SERVER'
 
 export class ElectronToolManager {
-  private serverReady: Promise<unknown>
+  private serverReady: Promise<unknown> | null = null
+  private modelPath: string | null = null
 
   constructor(readonly llamaServerManager: ElectronLlamaServerManager) {
-    this.serverReady = llamaServerManager.launchServer({
+    // Don't auto-launch - wait until a model is available
+  }
+
+  // Initialize with a specific model (called when user selects a model)
+  async initializeWithModel(modelFileName: string): Promise<void> {
+    this.modelPath = path.join(
+      app.getPath('userData'),
+      'models',
+      modelFileName,
+    )
+    this.serverReady = this.llamaServerManager.launchServer({
       id: SERVER_ID,
-      modelPath: path.join(
-        app.getPath('userData'),
-        'models',
-        'mistral-7b-instruct-v0.1.Q4_K_M.gguf',
-      ),
+      modelPath: this.modelPath,
       port: '8001',
     })
+    await this.serverReady
+  }
+
+  // Check if tool server is ready
+  isReady(): boolean {
+    return this.serverReady !== null
   }
 
   async getTool(prompt: string, tools: Record<string, unknown>[]) {
+    if (!this.serverReady) {
+      throw new Error('Tool server not initialized. Please download a model first.')
+    }
     await this.serverReady
 
     const systemPrompt = `[INST]You are an AI assistant. You call tools on behalf of a user. Tools have parameters. You must extract those parameters from the user's request. You have access to the following tools, and only these tools:

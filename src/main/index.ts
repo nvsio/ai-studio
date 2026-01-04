@@ -7,6 +7,7 @@ import { ElectronChatManager } from '@/managers/chats'
 import { EmbeddingsManager } from '@/managers/embeddings'
 import { ElectronFilesManager } from '@/managers/files'
 import { hardwareManager } from '@/managers/hardware'
+import { hooksManager } from '@/managers/hooks'
 import { ElectronLlamaServerManager } from '@/managers/llama-server'
 import { macOSNativeManager } from '@/managers/macos-native'
 import { ElectronModelManager } from '@/managers/models'
@@ -181,3 +182,38 @@ app.on('will-quit', () => {
 ipcMain.on('open-path', (_, path) => {
   shell.openPath(path)
 })
+
+// System/Hardware info handler
+ipcMain.handle('system:getHardwareInfo', () => {
+  const profile = hardwareManager.getProfile()
+  return {
+    totalMemoryGB: profile.totalMemoryGB,
+    availableMemoryGB: profile.availableMemoryGB,
+    cpuModel: profile.cpuModel,
+    cpuCores: profile.cpuCores,
+    isAppleSilicon: profile.isAppleSilicon,
+    generation: profile.generation,
+    variant: profile.variant,
+    gpuCores: profile.gpuCores,
+  }
+})
+
+// Hooks system handlers for continuous improvement
+ipcMain.handle('hooks:getMetrics', () => {
+  return hooksManager.getMetrics()
+})
+
+ipcMain.handle('hooks:getSuggestions', () => {
+  return hooksManager.getSuggestions()
+})
+
+ipcMain.handle('hooks:dismissSuggestion', (_, id: string) => {
+  hooksManager.dismissSuggestion(id)
+})
+
+ipcMain.handle('hooks:trigger', (_, event: string, data: Record<string, unknown>) => {
+  hooksManager.trigger(event as any, data)
+})
+
+// Trigger session start on app launch
+hooksManager.trigger('session:start', {})

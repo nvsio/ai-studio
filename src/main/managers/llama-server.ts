@@ -111,11 +111,6 @@ export class ElectronLlamaServerManager {
       effectiveThreads.toString(),
       '-b',
       effectiveBatchSize.toString(),
-      // Enable Flash Attention for better memory efficiency (llama.cpp 2024+)
-      '--flash-attn',
-      // Enable Metal GPU acceleration optimizations
-      '--mlock', // Lock model in memory for consistent performance
-      '-np', '1', // Number of parallel sequences (optimize for single user)
     ]
     if (multimodal && mmprojPath) {
       args.push('--mmproj', mmprojPath)

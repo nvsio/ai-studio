@@ -11,7 +11,11 @@ type ModelManagerState = {
   downloads: Map<string, ActiveDownload>
 }
 
-export const DEFAULT_MODEL = 'mistral-7b-instruct-v0.1.Q4_K_M.gguf'
+// Default model - Llama 3.2 8B for broad compatibility, scales up for high-memory systems
+export const DEFAULT_MODEL = 'Llama-3.2-8B-Instruct-Q4_K_M.gguf'
+
+// Recommended model for M4 Max with 128GB RAM
+export const HIGH_END_MODEL = 'Llama-3.3-70B-Instruct-Q4_K_M.gguf'
 
 export class ModelManager {
   private readonly _state = atom<ModelManagerState>('ModelManager._state', {
